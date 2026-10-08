@@ -1,0 +1,365 @@
+"use client";
+
+import React, { useState } from "react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Zap,
+  Gauge,
+  Car,
+  Users,
+  Settings,
+  Timer,
+  CheckCircle2,
+  CalendarDays,
+} from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { differenceInDays, format, addDays } from "date-fns";
+import { fr } from "date-fns/locale";
+import Button from "@/components/ui/Button";
+import DatePicker from "@/components/ui/DatePicker";
+import { CategoryBadge } from "@/components/ui/Badge";
+import { carsApi, reservationsApi } from "@/lib/api";
+import { mockCars } from "@/lib/mock-cars";
+import { useAuth } from "@/lib/auth";
+
+export default function CarDetailClient() {
+  const params = useParams();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  const today = format(new Date(), "yyyy-MM-dd");
+  const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(tomorrow);
+  const [activeImage, setActiveImage] = useState(0);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+
+  const { data: carData, isError } = useQuery({
+    queryKey: ["car", params.id],
+    queryFn: () => carsApi.getById(params.id as string),
+    retry: false,
+  });
+
+  const car =
+    isError || !carData?.data
+      ? mockCars.find((c) => c.id === params.id) || mockCars[0]
+      : carData.data;
+
+  const images = car.images?.length ? car.images : [car.imageUrl];
+
+  const days = Math.max(
+    1,
+    differenceInDays(new Date(endDate), new Date(startDate))
+  );
+  const totalPrice = days * car.pricePerDay;
+
+  const reserveMutation = useMutation({
+    mutationFn: () =>
+      reservationsApi.create({
+        carId: car.id,
+        startDate,
+        endDate,
+      }),
+    onSuccess: () => {
+      setReservationSuccess(true);
+    },
+  });
+
+  const handleReserve = () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    reserveMutation.mutate();
+  };
+
+  const specs = [
+    { icon: Zap, label: "Puissance", value: car.specs?.power },
+    { icon: Timer, label: "0-100 km/h", value: car.specs?.acceleration },
+    { icon: Gauge, label: "Vitesse max", value: car.specs?.topSpeed },
+    { icon: Car, label: "Moteur", value: car.specs?.engine },
+    { icon: Settings, label: "Transmission", value: car.specs?.transmission },
+    {
+      icon: Users,
+      label: "Places",
+      value: car.specs?.seats ? `${car.specs.seats} places` : undefined,
+    },
+  ].filter((s) => s.value);
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] pt-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group"
+        >
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          Retour à la flotte
+        </button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left: Images + Info */}
+          <div className="lg:col-span-2">
+            {/* Main image */}
+            <motion.div
+              key={activeImage}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden bg-[#111111] border border-[#2a2a2a] mb-4"
+            >
+              <Image
+                src={images[activeImage]}
+                alt={car.name}
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 66vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute top-4 left-4">
+                <CategoryBadge category={car.category} />
+              </div>
+            </motion.div>
+
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
+                {images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`relative h-20 w-32 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                      activeImage === i
+                        ? "border-[#c9a84c]"
+                        : "border-[#2a2a2a] opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${car.name} ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="128px"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Car info */}
+            <div className="mb-8">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-[#c9a84c] text-sm font-medium uppercase tracking-wider mb-1">
+                    {car.brand}
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-serif font-bold text-white">
+                    {car.name}
+                  </h1>
+                  {car.year && (
+                    <p className="text-gray-500 text-sm mt-1">{car.year}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-[#c9a84c]">
+                    {car.pricePerDay.toLocaleString("fr-FR")}€
+                  </p>
+                  <p className="text-gray-500 text-sm">par jour</p>
+                </div>
+              </div>
+
+              {car.description && (
+                <p className="text-gray-400 leading-relaxed mt-4">
+                  {car.description}
+                </p>
+              )}
+            </div>
+
+            {/* Specs grid */}
+            {specs.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-white font-semibold text-lg mb-4 font-serif">
+                  Caractéristiques techniques
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {specs.map((spec) => (
+                    <div
+                      key={spec.label}
+                      className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 hover:border-[#c9a84c]/30 transition-colors"
+                    >
+                      <spec.icon className="h-4 w-4 text-[#c9a84c] mb-2" />
+                      <p className="text-gray-500 text-xs mb-1">{spec.label}</p>
+                      <p className="text-white text-sm font-medium">
+                        {spec.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Features */}
+            {car.features && car.features.length > 0 && (
+              <div>
+                <h2 className="text-white font-semibold text-lg mb-4 font-serif">
+                  Équipements
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {car.features.map((feature) => (
+                    <div
+                      key={feature}
+                      className="flex items-center gap-3 text-gray-300 text-sm py-2 border-b border-[#1a1a1a]"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-[#c9a84c] shrink-0" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Reservation panel */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-28">
+              <div className="luxury-card rounded-2xl p-6 border border-[#2a2a2a]">
+                {reservationSuccess ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-8"
+                  >
+                    <div className="w-16 h-16 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 className="h-8 w-8 text-green-400" />
+                    </div>
+                    <h3 className="text-white font-semibold text-lg mb-2 font-serif">
+                      Réservation confirmée !
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-6">
+                      Votre demande a été enregistrée. Notre équipe vous
+                      contactera dans les plus brefs délais.
+                    </p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => router.push("/dashboard")}
+                    >
+                      Voir mes réservations
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-6">
+                      <CalendarDays className="h-5 w-5 text-[#c9a84c]" />
+                      <h2 className="text-white font-semibold text-lg font-serif">
+                        Réserver ce véhicule
+                      </h2>
+                    </div>
+
+                    <div className="space-y-4 mb-6">
+                      <DatePicker
+                        label="Date de début"
+                        value={startDate}
+                        onChange={(val) => {
+                          setStartDate(val);
+                          if (val >= endDate) {
+                            setEndDate(
+                              format(
+                                addDays(new Date(val), 1),
+                                "yyyy-MM-dd"
+                              )
+                            );
+                          }
+                        }}
+                        min={today}
+                      />
+                      <DatePicker
+                        label="Date de fin"
+                        value={endDate}
+                        onChange={setEndDate}
+                        min={format(
+                          addDays(new Date(startDate), 1),
+                          "yyyy-MM-dd"
+                        )}
+                      />
+                    </div>
+
+                    {/* Price breakdown */}
+                    <div className="bg-[#1a1a1a] rounded-xl p-4 mb-6 space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">
+                          {car.pricePerDay.toLocaleString("fr-FR")}€ × {days}{" "}
+                          {days > 1 ? "jours" : "jour"}
+                        </span>
+                        <span className="text-white">
+                          {(car.pricePerDay * days).toLocaleString("fr-FR")}€
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Livraison</span>
+                        <span className="text-green-400 text-xs font-medium">
+                          Incluse
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Assurance</span>
+                        <span className="text-green-400 text-xs font-medium">
+                          Incluse
+                        </span>
+                      </div>
+                      <div className="pt-3 border-t border-[#2a2a2a] flex justify-between">
+                        <span className="text-white font-semibold">Total</span>
+                        <span className="text-[#c9a84c] font-bold text-xl">
+                          {totalPrice.toLocaleString("fr-FR")}€
+                        </span>
+                      </div>
+                    </div>
+
+                    {reserveMutation.isError && (
+                      <p className="text-red-400 text-sm mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        Une erreur s&apos;est produite. Veuillez réessayer.
+                      </p>
+                    )}
+
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="w-full"
+                      onClick={handleReserve}
+                      isLoading={reserveMutation.isPending}
+                      disabled={!car.available}
+                    >
+                      {car.available
+                        ? isAuthenticated
+                          ? "Réserver maintenant"
+                          : "Se connecter pour réserver"
+                        : "Véhicule indisponible"}
+                    </Button>
+
+                    {!isAuthenticated && (
+                      <p className="text-gray-500 text-xs text-center mt-3">
+                        Vous serez redirigé vers la page de connexion
+                      </p>
+                    )}
+
+                    <div className="mt-4 flex items-center gap-2 text-gray-600 text-xs">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                      Annulation gratuite jusqu&apos;à 48h avant
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
