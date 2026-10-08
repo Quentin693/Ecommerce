@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -43,8 +48,10 @@ export class UsersService {
   }
 
   async findAll(): Promise<Omit<User, 'password'>[]> {
-    const users = await this.usersRepository.find({ order: { createdAt: 'DESC' } });
-    return users.map(({ password, ...user }) => user);
+    const users = await this.usersRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+    return users.map(({ password: _password, ...user }) => user);
   }
 
   async updateRole(
@@ -59,7 +66,7 @@ export class UsersService {
     const user = await this.findById(id);
     user.role = role;
     const saved = await this.usersRepository.save(user);
-    const { password, ...safeUser } = saved;
+    const { password: _password, ...safeUser } = saved;
     return safeUser;
   }
 }

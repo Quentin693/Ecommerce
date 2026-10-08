@@ -264,7 +264,10 @@ function DeliveriesPanel({
   return (
     <div className="space-y-4">
       {bookings.map((booking) => (
-        <DeliveryCard key={booking.id} booking={booking} />
+        <DeliveryCard
+          key={`${booking.id}-${booking.deliveryStatus}-${booking.deliveryAddress}-${booking.deliveryCity}`}
+          booking={booking}
+        />
       ))}
     </div>
   );
@@ -277,12 +280,6 @@ function DeliveryCard({ booking }: { booking: Reservation }) {
   const [status, setStatus] = useState<DeliveryStatus>(
     booking.deliveryStatus ?? "to_schedule"
   );
-
-  useEffect(() => {
-    setAddress(booking.deliveryAddress ?? "");
-    setCity(booking.deliveryCity ?? "");
-    setStatus(booking.deliveryStatus ?? "to_schedule");
-  }, [booking.deliveryAddress, booking.deliveryCity, booking.deliveryStatus]);
 
   const mutation = useMutation({
     mutationFn: () =>

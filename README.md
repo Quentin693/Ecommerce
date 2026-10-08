@@ -90,6 +90,8 @@ Ecommerce/
 | `/cars/[id]` | Fiche véhicule et demande de dates |
 | `/login`, `/register` | Connexion et création de compte |
 | `/dashboard` | Réservations de l’utilisateur connecté |
+| `/cart`, `/checkout` | Panier et paiement mock |
+| `/confirmation/[id]` | Confirmation de réservation sur le site |
 | `/contact` | Formulaire de contact |
 | `/admin` | Back-office admin : commandes, livraisons, flotte, comptes, messages |
 
@@ -116,15 +118,21 @@ Transmission : `automatic` ou `manual`.
 
 ### Bookings
 
-Toutes les routes exigent un JWT.
+Toutes les routes exigent un JWT. Un chevauchement de dates (`pending` / `confirmed`) sur la même voiture est refusé.
 
-- `POST /bookings` — `{ carId, startDate, endDate, notes?, deliveryAddress?, deliveryCity? }`. Le total est le nombre de jours multiplié par `pricePerDay`. Statut initial : `pending`. Livraison initiale : `to_schedule`.
+- `POST /bookings` — `{ carId, startDate, endDate, notes?, deliveryAddress?, deliveryCity? }`. Total = jours × `pricePerDay`. Statut initial : `pending`.
 - `GET /bookings` — bookings de l’utilisateur connecté.
-- `GET /bookings/:id` — le propriétaire, ou n’importe quel booking si le rôle est `admin`.
-- `PATCH /bookings/:id/cancel` — passe le statut à `cancelled`.
-- `GET /bookings/admin/all` — admin. Les mots de passe des clients ne sont pas renvoyés.
-- `PATCH /bookings/:id/status` — admin. Statuts : `pending`, `confirmed`, `cancelled`, `completed`.
-- `PATCH /bookings/:id/delivery` — admin. Champs : `deliveryStatus` (`to_schedule`, `scheduled`, `in_transit`, `delivered`, `returned`), `deliveryAddress`, `deliveryCity`.
+- `GET /bookings/:id` — propriétaire ou admin.
+- `PATCH /bookings/:id/cancel` — `cancelled`.
+- `GET /bookings/admin/all` — admin.
+- `PATCH /bookings/:id/status` — admin.
+- `PATCH /bookings/:id/delivery` — admin.
+
+### Panier et checkout
+
+- `GET /cart`, `POST /cart/items`, `DELETE /cart/items/:id` — JWT.
+- `POST /checkout` — paie en mock, crée booking(s) `confirmed` + payment(s) `succeeded`, vide le panier. Confirmation côté site : `/confirmation/:bookingId` (pas d’e-mail).
+- `GET /payments/:id` — détail du paiement.
 
 ### Contact
 
@@ -152,6 +160,8 @@ Le client de session accepte `access_token` (réponse Nest) ou `token`. Le rôle
 Les visuels de la démo sont des fichiers locaux, pour ne plus dépendre d’URLs distantes qui répondent en 404. `next.config.ts` autorise encore `images.unsplash.com` si une voiture en base pointe vers Unsplash.
 
 ## Organisation et livraison
+
+Besoins métier, architecture et schéma BDD : [docs/architecture.md](docs/architecture.md).
 
 Le cadre Scrum, la découpe en epics et la Definition of Done sont dans [docs/agile.md](docs/agile.md).
 

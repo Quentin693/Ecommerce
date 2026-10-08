@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Booking, BookingStatus, DeliveryStatus } from './entities/booking.entity';
+import {
+  Booking,
+  BookingStatus,
+  DeliveryStatus,
+} from './entities/booking.entity';
 import { CarsService } from '../cars/cars.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
@@ -20,7 +24,10 @@ export class BookingsService {
     private carsService: CarsService,
   ) {}
 
-  async create(createBookingDto: CreateBookingDto, userId: string): Promise<Booking> {
+  async create(
+    createBookingDto: CreateBookingDto,
+    userId: string,
+  ): Promise<Booking> {
     const car = await this.carsService.findOne(createBookingDto.carId);
 
     if (!car.available) {
@@ -32,6 +39,17 @@ export class BookingsService {
 
     if (endDate <= startDate) {
       throw new BadRequestException('End date must be after start date');
+    }
+
+    const overlap = await this.hasDateOverlap(
+      createBookingDto.carId,
+      startDate,
+      endDate,
+    );
+    if (overlap) {
+      throw new BadRequestException(
+        'This car is already booked for the selected dates',
+      );
     }
 
     const totalPrice = rentalDays(startDate, endDate) * Number(car.pricePerDay);
@@ -68,7 +86,9 @@ export class BookingsService {
     }
 
     if (userId && booking.userId !== userId) {
-      throw new ForbiddenException('You are not allowed to access this booking');
+      throw new ForbiddenException(
+        'You are not allowed to access this booking',
+      );
     }
 
     return this.present(booking);
@@ -114,6 +134,29 @@ export class BookingsService {
       booking.deliveryCity = dto.deliveryCity;
     }
     return this.present(await this.bookingsRepository.save(booking));
+  }
+
+  async hasDateOverlap(
+    carId: string,
+    startDate: Date,
+    endDate: Date,
+    excludeBookingId?: string,
+  ): Promise<boolean> {
+    const query = this.bookingsRepository
+      .createQueryBuilder('booking')
+      .where('booking.carId = :carId', { carId })
+      .andWhere('booking.status IN (:...statuses)', {
+        statuses: ['pending', 'confirmed'],
+      })
+      .andWhere('booking.startDate < :endDate', { endDate })
+      .andWhere('booking.endDate > :startDate', { startDate });
+
+    if (excludeBookingId) {
+      query.andWhere('booking.id != :excludeBookingId', { excludeBookingId });
+    }
+
+    const count = await query.getCount();
+    return count > 0;
   }
 
   private present(booking: Booking): Booking {

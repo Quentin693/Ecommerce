@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogOut, User, LayoutDashboard, Shield } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Shield, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
@@ -131,6 +131,14 @@ export default function Navbar() {
                       </div>
                       <div className="p-1">
                         <Link
+                          href="/cart"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm transition-colors"
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                          Panier
+                        </Link>
+                        <Link
                           href="/dashboard"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2 px-3 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg text-sm transition-colors"
@@ -216,6 +224,12 @@ export default function Navbar() {
               <div className="pt-4 flex flex-col gap-3">
                 {isAuthenticated ? (
                   <>
+                    <Link href="/cart" onClick={() => setIsMobileOpen(false)}>
+                      <Button variant="secondary" size="sm" className="w-full">
+                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        Panier
+                      </Button>
+                    </Link>
                     <Link
                       href="/dashboard"
                       onClick={() => setIsMobileOpen(false)}

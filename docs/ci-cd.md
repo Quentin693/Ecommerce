@@ -8,8 +8,8 @@ Déclencheurs : pull request, push sur `main`, lancement manuel.
 
 | Job | Dossier | Commandes |
 | --- | --- | --- |
-| API — tests et build | `backend` | `npm ci`, `npm test -- --ci`, `npm run build` |
-| Site — build | `frontend` | `npm ci`, `npm run build` |
+| API | `backend` | lint, tests unitaires, build, seed, smoke e2e (`test/smoke.mjs`) sur Postgres de service |
+| Site | `frontend` | lint, build |
 
 Le build du site reçoit `NEXT_PUBLIC_API_URL=http://localhost:3001`. Cette valeur est figée dans le JavaScript au moment de la compilation.
 

@@ -151,7 +151,54 @@ export const reservationsApi = {
 
   getMyReservations: () => api.get<Reservation[]>("/bookings"),
 
+  getById: (id: string) => api.get<Reservation>(`/bookings/${id}`),
+
   cancel: (id: string) => api.patch<Reservation>(`/bookings/${id}/cancel`),
+};
+
+export interface CartItem {
+  id: string;
+  carId: string;
+  car?: Car;
+  startDate: string;
+  endDate: string;
+  notes?: string;
+  deliveryAddress?: string;
+  deliveryCity?: string;
+  lineTotal: number;
+  days: number;
+}
+
+export interface CheckoutResult {
+  message: string;
+  orders: {
+    booking: Reservation;
+    payment: {
+      id: string;
+      amount: number;
+      status: string;
+      provider: string;
+    };
+    confirmationUrl: string;
+  }[];
+}
+
+export const cartApi = {
+  get: () => api.get<{ items: CartItem[]; total: number }>("/cart"),
+  addItem: (data: {
+    carId: string;
+    startDate: string;
+    endDate: string;
+    notes?: string;
+    deliveryAddress?: string;
+    deliveryCity?: string;
+  }) => api.post<CartItem>("/cart/items", data),
+  removeItem: (id: string) => api.delete(`/cart/items/${id}`),
+  checkout: (data?: {
+    deliveryAddress?: string;
+    deliveryCity?: string;
+    notes?: string;
+  }) => api.post<CheckoutResult>("/checkout", data ?? {}),
 };
 
 export const contactApi = {

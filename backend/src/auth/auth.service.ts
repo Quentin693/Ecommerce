@@ -20,7 +20,7 @@ export class AuthService {
       lastName: registerDto.lastName,
     });
     const payload = { sub: user.id, email: user.email, role: user.role };
-    const { password, ...safeUser } = user;
+    const { password: _password, ...safeUser } = user;
     return {
       access_token: this.jwtService.sign(payload),
       user: safeUser,
@@ -33,7 +33,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -53,7 +56,7 @@ export class AuthService {
 
   async getMe(userId: string) {
     const user = await this.usersService.findById(userId);
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return result;
   }
 }

@@ -26,7 +26,9 @@ async function seed() {
   const carRepository = AppDataSource.getRepository(Car);
 
   // Create admin user
-  const adminExists = await userRepository.findOne({ where: { email: 'admin@luxurycars.com' } });
+  const adminExists = await userRepository.findOne({
+    where: { email: 'admin@luxurycars.com' },
+  });
   if (!adminExists) {
     const adminPassword = await bcrypt.hash('Admin123!', 10);
     const admin = userRepository.create({
@@ -43,7 +45,9 @@ async function seed() {
   }
 
   // Create test user
-  const userExists = await userRepository.findOne({ where: { email: 'user@test.com' } });
+  const userExists = await userRepository.findOne({
+    where: { email: 'user@test.com' },
+  });
   if (!userExists) {
     const userPassword = await bcrypt.hash('Test123!', 10);
     const testUser = userRepository.create({
@@ -67,13 +71,18 @@ async function seed() {
       model: '488 GTB',
       year: 2022,
       description:
-        'La Ferrari 488 GTB est l\'expression ultime de la passion Ferrari. Avec son moteur V8 biturbo de 660 ch, elle offre des performances exceptionnelles et un design emblématique.',
+        "La Ferrari 488 GTB est l'expression ultime de la passion Ferrari. Avec son moteur V8 biturbo de 660 ch, elle offre des performances exceptionnelles et un design emblématique.",
       pricePerDay: 1500,
       category: 'supercar' as const,
       imageUrl: '/cars/ferrari-488.jpg',
       images: ['/cars/ferrari-488.jpg'],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Livraison à domicile', 'Assistance 24/7'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Livraison à domicile',
+        'Assistance 24/7',
+      ],
       seats: 2,
       transmission: 'automatic' as const,
     },
@@ -87,9 +96,17 @@ async function seed() {
       pricePerDay: 1800,
       category: 'supercar' as const,
       imageUrl: '/cars/lamborghini-huracan.jpg',
-      images: ['/cars/lamborghini-huracan.jpg', '/cars/lamborghini-huracan-2.jpg'],
+      images: [
+        '/cars/lamborghini-huracan.jpg',
+        '/cars/lamborghini-huracan-2.jpg',
+      ],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Chauffeur disponible', 'Livraison VIP'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Chauffeur disponible',
+        'Livraison VIP',
+      ],
       seats: 2,
       transmission: 'automatic' as const,
     },
@@ -105,7 +122,13 @@ async function seed() {
       imageUrl: '/cars/rolls-royce.jpg',
       images: ['/cars/rolls-royce.jpg', '/cars/rolls-royce-2.jpg'],
       available: true,
-      features: ['Chauffeur inclus', 'GPS', 'Champagne à bord', 'Assurance premium', 'Tapis rouge'],
+      features: [
+        'Chauffeur inclus',
+        'GPS',
+        'Champagne à bord',
+        'Assurance premium',
+        'Tapis rouge',
+      ],
       seats: 5,
       transmission: 'automatic' as const,
     },
@@ -119,9 +142,17 @@ async function seed() {
       pricePerDay: 1200,
       category: 'luxury' as const,
       imageUrl: '/cars/bentley-continental.jpg',
-      images: ['/cars/bentley-continental.jpg', '/cars/bentley-continental-2.jpg'],
+      images: [
+        '/cars/bentley-continental.jpg',
+        '/cars/bentley-continental-2.jpg',
+      ],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Système audio Bang & Olufsen', 'Massage sièges'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Système audio Bang & Olufsen',
+        'Massage sièges',
+      ],
       seats: 4,
       transmission: 'automatic' as const,
     },
@@ -131,13 +162,18 @@ async function seed() {
       model: '911 Turbo S',
       year: 2023,
       description:
-        'La Porsche 911 Turbo S est l\'icône sportive par excellence. 650 ch, 0-100 en 2,7 secondes et une maniabilité légendaire pour une expérience de conduite inoubliable.',
+        "La Porsche 911 Turbo S est l'icône sportive par excellence. 650 ch, 0-100 en 2,7 secondes et une maniabilité légendaire pour une expérience de conduite inoubliable.",
       pricePerDay: 900,
       category: 'supercar' as const,
       imageUrl: '/cars/porsche-911.jpg',
       images: ['/cars/porsche-911.jpg'],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Sport Chrono Package', 'Livraison disponible'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Sport Chrono Package',
+        'Livraison disponible',
+      ],
       seats: 4,
       transmission: 'automatic' as const,
     },
@@ -147,13 +183,18 @@ async function seed() {
       model: 'DB11',
       year: 2022,
       description:
-        'L\'Aston Martin DB11 est l\'élégance britannique à l\'état pur. Son V12 de 600 ch dans une carrosserie au design intemporel vous offre une expérience grand tourisme unique.',
+        "L'Aston Martin DB11 est l'élégance britannique à l'état pur. Son V12 de 600 ch dans une carrosserie au design intemporel vous offre une expérience grand tourisme unique.",
       pricePerDay: 1100,
       category: 'luxury' as const,
       imageUrl: '/cars/aston-db11.jpg',
       images: ['/cars/aston-db11.jpg', '/cars/aston-db11-2.jpg'],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Son Bang & Olufsen', 'Système de conduite sportif'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Son Bang & Olufsen',
+        'Système de conduite sportif',
+      ],
       seats: 4,
       transmission: 'automatic' as const,
     },
@@ -169,7 +210,12 @@ async function seed() {
       imageUrl: '/cars/mclaren-720s.jpg',
       images: ['/cars/mclaren-720s.jpg', '/cars/mclaren-720s-2.jpg'],
       available: true,
-      features: ['GPS', 'Assurance incluse', 'Mode piste', 'Assistance technique dédiée'],
+      features: [
+        'GPS',
+        'Assurance incluse',
+        'Mode piste',
+        'Assistance technique dédiée',
+      ],
       seats: 2,
       transmission: 'automatic' as const,
     },
@@ -179,7 +225,7 @@ async function seed() {
       model: 'Chiron',
       year: 2022,
       description:
-        'La Bugatti Chiron est l\'hypercar ultime. Son W16 quadriturbo de 1500 ch la propulse à plus de 420 km/h. Une expérience réservée à une élite mondiale, maintenant accessible.',
+        "La Bugatti Chiron est l'hypercar ultime. Son W16 quadriturbo de 1500 ch la propulse à plus de 420 km/h. Une expérience réservée à une élite mondiale, maintenant accessible.",
       pricePerDay: 5000,
       category: 'supercar' as const,
       imageUrl: '/cars/bugatti-chiron.jpg',
@@ -199,7 +245,9 @@ async function seed() {
   ];
 
   for (const carData of carsData) {
-    const exists = await carRepository.findOne({ where: { name: carData.name } });
+    const exists = await carRepository.findOne({
+      where: { name: carData.name },
+    });
     if (!exists) {
       const car = carRepository.create(carData);
       await carRepository.save(car);

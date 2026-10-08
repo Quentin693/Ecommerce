@@ -32,12 +32,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
     if (!storedToken) {
-      setIsLoading(false);
-      return;
+      queueMicrotask(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+      return () => {
+        cancelled = true;
+      };
     }
 
     setToken(storedToken);
@@ -52,11 +57,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authApi
       .me()
       .then((response) => {
+        if (cancelled) return;
         setUser(response.data);
         localStorage.setItem("user", JSON.stringify(response.data));
       })
       .catch(() => {})
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const persistSession = useCallback((data: { token?: string; access_token?: string; user: User }) => {

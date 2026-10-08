@@ -2,6 +2,8 @@
 
 LuxeDrive se pilote en Scrum léger. Un sprint dure deux semaines. Une seule branche d’intégration : `main`. Le découpage fonctionnel suit les modules déjà présents dans le code, pour qu’une story corresponde à un dossier, pas à une réécriture.
 
+Le tableau des besoins, l’architecture et le schéma de données sont dans [architecture.md](architecture.md).
+
 ## Rôles
 
 | Rôle | Responsabilité |
@@ -122,4 +124,12 @@ Objectif : la CI refuse une régression de style et un parcours métier cassé.
 2. Remplacer le test e2e Nest par un scénario réel branché sur Postgres.
 3. Ajouter ce job e2e au workflow, après le build.
 
-Hors sprint tant que ce n’est pas priorisé : paiement, emails transactionnels, recherche côté API (le filtre texte est encore dans le navigateur).
+### Epic Panier & paiement — fait
+
+| Story | Critères d’acceptation |
+| --- | --- |
+| Panier | Ajout / retrait d’une voiture avec dates ; total affiché |
+| Checkout | Paiement mock ; booking confirmé ; redirection `/confirmation/[id]` sans e-mail |
+| Doubles réservations | Impossible d’ajouter au panier ou de checkout sur des dates déjà prises |
+
+Hors sprint : Stripe réel, webhooks, e-mails, recherche texte côté API.

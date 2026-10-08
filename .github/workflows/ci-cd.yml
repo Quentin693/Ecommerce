@@ -11,11 +11,36 @@ permissions:
 
 jobs:
   backend:
-    name: API — tests et build
+    name: API — lint, tests, e2e, build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: luxury_cars
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: luxury_cars
+      JWT_SECRET: ci-test-secret
+      JWT_EXPIRATION: 7d
+      TYPEORM_SYNCHRONIZE: "true"
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 3001
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,11 +49,30 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - run: npm run lint
       - run: npm test -- --ci
       - run: npm run build
+      - run: npm run seed
+      - name: Start API
+        run: |
+          node dist/main.js &
+          echo $! > /tmp/api.pid
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3001/cars >/dev/null; then
+              echo "API ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start"
+          exit 1
+      - run: API_URL=http://127.0.0.1:3001 npm run test:e2e
+      - name: Stop API
+        if: always()
+        run: kill $(cat /tmp/api.pid) 2>/dev/null || true
 
   frontend:
-    name: Site — build
+    name: Site — lint et build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -41,6 +85,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001
@@ -74,7 +119,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          build-args: NEXT_PUBLIC_API_URL=http://localhost:3001
+          build-args: NEXT_PUBLIC_API_URL=http://localhost:3011
           tags: |
             ghcr.io/${{ steps.image.outputs.name }}-web:${{ github.sha }}
             ghcr.io/${{ steps.image.outputs.name }}-web:latest

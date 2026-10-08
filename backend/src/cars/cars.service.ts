@@ -1,6 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, Between, MoreThanOrEqual, LessThanOrEqual, QueryFailedError } from 'typeorm';
+import {
+  Repository,
+  FindManyOptions,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  QueryFailedError,
+} from 'typeorm';
 import { Car } from './entities/car.entity';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
@@ -27,7 +38,14 @@ export class CarsService {
   }
 
   async findAll(filters: CarFilters = {}) {
-    const { category, minPrice, maxPrice, available, page = 1, limit = 10 } = filters;
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      available,
+      page = 1,
+      limit = 10,
+    } = filters;
 
     const where: any = {};
 
@@ -85,7 +103,9 @@ export class CarsService {
       await this.carsRepository.remove(car);
     } catch (error) {
       if (error instanceof QueryFailedError) {
-        throw new BadRequestException('This car is linked to bookings and cannot be deleted');
+        throw new BadRequestException(
+          'This car is linked to bookings and cannot be deleted',
+        );
       }
       throw error;
     }

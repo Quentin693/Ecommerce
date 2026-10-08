@@ -11,7 +11,8 @@ import { User } from '../../users/entities/user.entity';
 import { Car } from '../../cars/entities/car.entity';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-export type DeliveryStatus = 'to_schedule' | 'scheduled' | 'in_transit' | 'delivered' | 'returned';
+export type DeliveryStatus =
+  'to_schedule' | 'scheduled' | 'in_transit' | 'delivered' | 'returned';
 
 @Entity('bookings')
 export class Booking {

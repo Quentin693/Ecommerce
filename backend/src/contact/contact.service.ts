@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ContactMessage, ContactStatus } from './entities/contact-message.entity';
+import {
+  ContactMessage,
+  ContactStatus,
+} from './entities/contact-message.entity';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 @Injectable()
@@ -20,7 +23,10 @@ export class ContactService {
     return this.contactRepository.find({ order: { createdAt: 'DESC' } });
   }
 
-  async updateStatus(id: string, status: ContactStatus): Promise<ContactMessage> {
+  async updateStatus(
+    id: string,
+    status: ContactStatus,
+  ): Promise<ContactMessage> {
     const message = await this.contactRepository.findOne({ where: { id } });
     if (!message) {
       throw new NotFoundException('Message not found');

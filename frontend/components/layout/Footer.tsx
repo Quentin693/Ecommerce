@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Share2, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -178,14 +178,18 @@ export default function Footer() {
             © 2026 LuxeDrive. Tous droits réservés.
           </p>
           <div className="flex items-center gap-6">
-            {["Mentions légales", "Confidentialité", "CGV"].map((item) => (
-              <a
-                key={item}
-                href="#"
+            {[
+              { href: "/mentions-legales", label: "Mentions légales" },
+              { href: "/confidentialite", label: "Confidentialité" },
+              { href: "/cgv", label: "CGV" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
                 className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
               >
-                {item}
-              </a>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
