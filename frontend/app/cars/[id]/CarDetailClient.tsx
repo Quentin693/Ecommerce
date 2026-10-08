@@ -95,19 +95,6 @@ export default function CarDetailClient() {
     (cartMutation.error as { response?: { data?: { message?: string | string[] } } })
       ?.response?.data?.message;
 
-  const specs = [
-    { icon: Zap, label: "Puissance", value: car.specs?.power },
-    { icon: Timer, label: "0-100 km/h", value: car.specs?.acceleration },
-    { icon: Gauge, label: "Vitesse max", value: car.specs?.topSpeed },
-    { icon: Car, label: "Moteur", value: car.specs?.engine },
-    { icon: Settings, label: "Transmission", value: car.specs?.transmission },
-    {
-      icon: Users,
-      label: "Places",
-      value: car.specs?.seats ? `${car.specs.seats} places` : undefined,
-    },
-  ].filter((s) => s.value);
-
   if (carLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] pt-28">
@@ -128,6 +115,19 @@ export default function CarDetailClient() {
       </div>
     );
   }
+
+  const specs = [
+    { icon: Zap, label: "Puissance", value: car.specs?.power },
+    { icon: Timer, label: "0-100 km/h", value: car.specs?.acceleration },
+    { icon: Gauge, label: "Vitesse max", value: car.specs?.topSpeed },
+    { icon: Car, label: "Moteur", value: car.specs?.engine },
+    { icon: Settings, label: "Transmission", value: car.specs?.transmission },
+    {
+      icon: Users,
+      label: "Places",
+      value: car.specs?.seats ? `${car.specs.seats} places` : undefined,
+    },
+  ].filter((s) => s.value);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pt-28">
